@@ -6,6 +6,11 @@ import static blue.lhf.varpu.vector.Quaternion.pure;
 import static blue.lhf.varpu.vector.Ternion.*;
 import static java.lang.Math.*;
 
+/**
+ * Represents a 3-orthotope, i.e. a box.
+ * A box, in varpu, maintains a record of its origin vertex and the
+ * three orthogonal edges the origin connects to.
+ * */
 @SuppressWarnings("unused")
 public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Orthotope<Double, Box> {
     public static Box box(final Ternion one, final Ternion two) {
