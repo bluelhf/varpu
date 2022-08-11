@@ -1,21 +1,17 @@
 package blue.lhf.varpu.vector;
 
 import java.util.Collection;
-import java.util.stream.*;
+import java.util.stream.DoubleStream;
 
 import static java.lang.Math.sqrt;
 
 public interface RVector<Self extends RVector<Self>> extends IVector<Double, Self> {
-    default Double distance(final RVector<Self> other) {
-        final Self anti = this.product(-1D);
-        final Self sub = other.sum(anti);
+    default Double distance(final Self other) {
+        return difference(other).length();
+    }
 
-        double sum = 0D;
-        for (final Double component : sub.components()) {
-            sum += component * component;
-        }
-
-        return sqrt(sum);
+    default Self difference(final Self that) {
+        return sum(that.product(-1.0));
     }
 
     record ZeroVector<Self extends RVector<Self>>(int dimension) implements RVector<Self> {
@@ -36,6 +32,11 @@ public interface RVector<Self extends RVector<Self>> extends IVector<Double, Sel
     }
 
     default Double length() {
-        return distance(new ZeroVector<>(dimension()));
+        double sum = 0D;
+        for (final Double component : components()) {
+            sum += component * component;
+        }
+
+        return sqrt(sum);
     }
 }
