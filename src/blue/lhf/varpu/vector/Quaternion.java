@@ -1,7 +1,9 @@
 package blue.lhf.varpu.vector;
 
 import java.text.DecimalFormat;
+import java.util.*;
 
+import static blue.lhf.varpu.vector.Ternion.ternion;
 import static java.lang.Math.*;
 
 /**
@@ -19,7 +21,9 @@ import static java.lang.Math.*;
  *     are supported.
  * </p>
  * */
-public record Quaternion(double r, double x, double y, double z) implements IVector<Double, Quaternion> {
+public record Quaternion(double r, double x, double y, double z) implements RVector<Quaternion> {
+    public static final Quaternion ZERO = quaternion(0, 0, 0, 0);
+
     public static Quaternion euler(double yaw, double pitch, double roll) {
         return new Quaternion(
             cos(roll / 2) * cos(pitch / 2) * cos(yaw / 2) + sin(roll / 2) * sin(pitch / 2) * sin(yaw / 2),
@@ -27,6 +31,18 @@ public record Quaternion(double r, double x, double y, double z) implements IVec
             cos(roll / 2) * sin(pitch / 2) * cos(yaw / 2) + sin(roll / 2) * cos(pitch / 2) * sin(yaw / 2),
             cos(roll / 2) * cos(pitch / 2) * sin(yaw / 2) - sin(roll / 2) * sin(pitch / 2) * cos(yaw / 2)
         );
+    }
+
+    public static Quaternion quaternion(final double r, final double x, final double y, final double z) {
+        return new Quaternion(r, x, y, z);
+    }
+
+    public static Quaternion pure(final Ternion ternion) {
+        return new Quaternion(0, ternion.x(), ternion.y(), ternion.z());
+    }
+
+    public Ternion toTernion() {
+        return ternion(x, y, z);
     }
 
     @Override
@@ -52,6 +68,11 @@ public record Quaternion(double r, double x, double y, double z) implements IVec
             (this.y * that),
             (this.z * that)
         );
+    }
+
+    @Override
+    public Collection<Double> components() {
+        return List.of(r, x, y, z);
     }
 
     public Quaternion product(Quaternion that) {
@@ -107,13 +128,21 @@ public record Quaternion(double r, double x, double y, double z) implements IVec
     public String toString() {
         final var fmt = new DecimalFormat("#.######");
         final var builder = new StringBuilder("(");
-        if (this.r != 0) builder.append(fmt.format(r));
-        if (this.x != 0)
-            builder.append(this.x > 0 ? " + " : " - ").append(fmt.format(Math.abs(x))).append("\uD835\uDC22");
-        if (this.y != 0)
-            builder.append(this.y > 0 ? " + " : " - ").append(fmt.format(Math.abs(y))).append("\uD835\uDC23");
-        if (this.z != 0)
-            builder.append(this.z > 0 ? " + " : " - ").append(fmt.format(Math.abs(z))).append("\uD835\uDC24");
+        class EquationBuilder {
+            boolean first = true;
+
+            public void addTerm(final double value, final String parameter) {
+                if (!first) builder.append(value >= 0 ? " + " : " - ");
+                builder.append(fmt.format(Math.abs(value))).append(parameter);
+                first = false;
+            }
+        }
+
+        final EquationBuilder e = new EquationBuilder();
+        e.addTerm(r, "");
+        e.addTerm(x, "\uD835\uDC22");
+        e.addTerm(y, "\uD835\uDC23");
+        e.addTerm(z, "\uD835\uDC24");
         builder.append(")");
 
         return builder.toString();
