@@ -1,9 +1,8 @@
 package blue.lhf.varpu.vector;
 
 import java.text.DecimalFormat;
-import java.util.*;
-
-import static java.util.stream.Collectors.joining;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * <p>
@@ -34,6 +33,10 @@ public record Ternion(Double x, Double y, Double z) implements RVector<Ternion> 
     @Override
     public Ternion product(Double that) {
         return new Ternion(this.x * that, this.y * that, this.z * that);
+    }
+
+    public double dot(final Ternion that) {
+        return this.x * that.x + this.y * that.y + this.z * that.z;
     }
 
     @Override
