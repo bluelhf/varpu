@@ -13,6 +13,20 @@ import static java.lang.Math.*;
  * */
 @SuppressWarnings("unused")
 public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Orthotope<Double, Box> {
+    public Box(final Ternion origin, final Ternion a, final Ternion b, final Ternion c) {
+        this.origin = origin;
+        this.a = a; this.b = b; this.c = c;
+        ensureOrthogonal();
+    }
+
+    private void ensureOrthogonal() {
+        final IllegalArgumentException ex = new IllegalArgumentException(
+                "A box' three origin-connected edges must be orthogonal.");
+        if (a.dot(b) != 0) throw ex;
+        if (b.dot(c) != 0) throw ex;
+        if (a.dot(c) != 0) throw ex;
+    }
+
     public static Box box(final Ternion one, final Ternion two) {
         return box(one, two, null);
     }
