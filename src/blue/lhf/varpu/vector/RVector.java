@@ -5,6 +5,9 @@ import java.util.stream.DoubleStream;
 
 import static java.lang.Math.sqrt;
 
+/**
+ * <p>Represents an element in ℝN, where N is any positive integer.</p>
+ * */
 public interface RVector<Self extends RVector<Self>> extends IVector<Double, Self> {
     default Double distance(final Self other) {
         return difference(other).length();
