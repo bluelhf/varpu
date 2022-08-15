@@ -7,9 +7,16 @@ import static blue.lhf.varpu.vector.Ternion.*;
 import static java.lang.Math.*;
 
 /**
- * Represents a 3-orthotope, i.e. a box.
- * A box, in varpu, maintains a record of its origin vertex and the
- * three orthogonal edges the origin connects to.
+ * <p>
+ *     Represents a 3-orthotope, i.e. a box.
+ * </p>
+ * <p>
+ *     A box, in varpu, maintains a record of its origin vertex and the
+ *     three orthogonal edges the origin connects to.
+ * </p>
+ * <p>
+ *     Boxes support several methods for simple quaternion transformation.
+ * </p>
  * */
 @SuppressWarnings("unused")
 public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Orthotope<Double, Box> {
@@ -19,6 +26,10 @@ public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Or
         ensureOrthogonal();
     }
 
+    /**
+     * Ensures that this box' three origin-connected edges are orthogonal.
+     * @throws IllegalArgumentException If they are not.
+     * */
     private void ensureOrthogonal() {
         final IllegalArgumentException ex = new IllegalArgumentException(
                 "A box' three origin-connected edges must be orthogonal.");
@@ -27,11 +38,19 @@ public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Or
         if (a.dot(c) != 0) throw ex;
     }
 
+    /**
+     * @return An axis-aligned box with two opposing corners at the two points.
+     * */
     public static Box box(final Ternion one, final Ternion two) {
         return box(one, two, null);
     }
 
-    public static Box box(final Ternion one, final Ternion two, final Quaternion transformation) {
+    /**
+     * @return A box constructed by rotating
+     * the axis-aligned box constructed from the specified points around its centre by
+     * the given {@link Quaternion} rotation.
+     * */
+    public static Box box(final Ternion one, final Ternion two, final Quaternion rotation) {
         final Ternion min = ternion(
             min(one.x(), two.x()),
             min(one.y(), two.y()),
@@ -49,9 +68,13 @@ public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Or
             ternion(0, max.y() - min.y(), 0),
             ternion(0, 0, max.z() - min.z()));
 
-        return transformation != null ? aligned.transform(transformation) : aligned;
+        return rotation != null ? aligned.rotate(rotation) : aligned;
     }
 
+    /**
+     * @return A box equivalent to this one with its origin offset by the given {@link Ternion}.
+     * @param offset The ternion by which to offset the box' origin.
+     * */
     public Box offset(final Ternion offset) {
         return new Box(origin.sum(offset), a, b, c);
     }
@@ -60,6 +83,11 @@ public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Or
         return origin.sum(a.product(0.5)).sum(b.product(0.5)).sum(c.product(0.5));
     }
 
+    /**
+     * @return A box equivalent to this one rotated around the <b>centre</b> of the box by the given quaternion rotation.
+     * @param rotation The quaternion rotation to apply.
+     * @see Box#transform(Quaternion)
+     * */
     public Box rotate(final Quaternion rotation) {
         final Box t = transform(rotation);
         return new Box(
@@ -68,15 +96,23 @@ public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Or
         );
     }
 
-    public Box transform(final Quaternion transformation) {
+    /**
+     * @return A box equivalent to this one rotated around the <b>origin</b> of the box by the given quaternion rotation.
+     * @param rotation The quaternion rotation to apply.
+     * @see Box#rotate(Quaternion)
+     * */
+    public Box transform(final Quaternion rotation) {
         return new Box(
             origin,
-            transformation.product(pure(a)).product(transformation.conjugate()).toTernion(),
-            transformation.product(pure(b)).product(transformation.conjugate()).toTernion(),
-            transformation.product(pure(c)).product(transformation.conjugate()).toTernion()
+            rotation.product(pure(a)).product(rotation.conjugate()).toTernion(),
+            rotation.product(pure(b)).product(rotation.conjugate()).toTernion(),
+            rotation.product(pure(c)).product(rotation.conjugate()).toTernion()
         );
     }
 
+    /**
+     * @return An array of all 8 of this box' vertices
+     * */
     public Ternion[] vertices() {
         return new Ternion[]{
             origin.sum(ZERO).sum(ZERO).sum(ZERO),
@@ -90,6 +126,9 @@ public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Or
         };
     }
 
+    /**
+     * @return An array of all 12 of this box' edges.
+     * */
     public Ternion[][] edges() {
         return new Ternion[][]{
             {origin, origin.sum(a)},
@@ -120,6 +159,9 @@ public record Box(Ternion origin, Ternion a, Ternion b, Ternion c) implements Or
         return new Ternion[]{a, b, c};
     }
 
+    /**
+     * @return The volume of this {@link Box}, i.e., the product of its three origin-connected edges.
+     * */
     public Double volume() {
         return a.length() * b.length() * c.length();
     }
