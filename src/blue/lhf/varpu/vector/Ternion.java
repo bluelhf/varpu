@@ -39,6 +39,15 @@ public record Ternion(Double x, Double y, Double z) implements RVector<Ternion> 
         return this.x * that.x + this.y * that.y + this.z * that.z;
     }
 
+
+    public Ternion cross(final Ternion that) {
+        return ternion(
+            this.y * that.z - this.z * that.y,
+            this.z * that.x - this.x * that.z,
+            this.x * that.y - that.y * this.z
+        );
+    }
+
     @Override
     public Collection<Double> components() {
         return List.of(x, y, z);

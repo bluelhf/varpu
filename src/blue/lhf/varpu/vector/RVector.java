@@ -21,6 +21,10 @@ public interface RVector<Self extends RVector<Self>> extends IVector<Double, Sel
         return product(-1.0);
     }
 
+    default Self normalised() {
+        return product(1 / length());
+    }
+
     record ZeroVector<Self extends RVector<Self>>(int dimension) implements RVector<Self> {
         @Override
         public Self sum(Self that) {
