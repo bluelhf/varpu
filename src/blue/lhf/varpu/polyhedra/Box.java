@@ -2,8 +2,6 @@ package blue.lhf.varpu.polyhedra;
 
 import blue.lhf.varpu.vector.*;
 
-import java.util.Objects;
-
 import static blue.lhf.varpu.vector.Quaternion.pure;
 import static blue.lhf.varpu.vector.Ternion.ZERO;
 import static blue.lhf.varpu.vector.Ternion.ternion;
@@ -239,7 +237,7 @@ public final class Box implements Orthotope<Ternion, Box> {
         return new Box(ternion.difference(a.product(0.5).sum(b.product(0.5)).sum(c.product(0.5))), a, b, c);
     }
 
-    public boolean similar(final Box that, final double error) {
+    public boolean isSimilar(final Box that, final double error) {
         final Ternion[] ours = this.vertices();
         final Ternion[] theirs = that.vertices();
         for (int i = 0; i < ours.length; ++i) {

@@ -27,7 +27,7 @@ class VarpuTest {
             ternion(0, 5 / sqrt(2), 5 / sqrt(2))
         );
 
-        assertTrue(box.similar(expected, 0.1));
+        assertTrue(box.isSimilar(expected, 0.1));
     }
 
     @Test
