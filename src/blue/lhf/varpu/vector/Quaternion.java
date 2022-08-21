@@ -1,7 +1,6 @@
 package blue.lhf.varpu.vector;
 
 import java.text.DecimalFormat;
-import java.util.*;
 
 import static blue.lhf.varpu.vector.Ternion.ternion;
 import static java.lang.Math.*;
@@ -22,7 +21,7 @@ import static java.lang.Math.*;
  * </p>
  * */
 public record Quaternion(double r, double x, double y, double z) implements RVector<Quaternion> {
-    public static final Quaternion ZERO = quaternion(0, 0, 0, 0);
+    public static final Quaternion ORIGO = quaternion(0, 0, 0, 0);
 
     public static Quaternion euler(double yaw, double pitch, double roll) {
         return new Quaternion(

@@ -1,7 +1,6 @@
 package blue.lhf.varpu.vector;
 
 import java.util.*;
-import java.util.stream.DoubleStream;
 
 import static java.lang.Math.sqrt;
 
@@ -25,7 +24,7 @@ public interface RVector<Self extends RVector<Self>> extends IVector<Double, Sel
         return product(1 / length());
     }
 
-    record ZeroVector<Self extends RVector<Self>>(int dimension) implements RVector<Self> {
+    record OrigoVector<Self extends RVector<Self>>(int dimension) implements RVector<Self> {
         @Override
         public Self sum(Self that) {
             return that;
