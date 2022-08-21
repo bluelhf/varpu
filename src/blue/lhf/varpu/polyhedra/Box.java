@@ -1,11 +1,8 @@
 package blue.lhf.varpu.polyhedra;
 
-import blue.lhf.varpu.vector.Quaternion;
-import blue.lhf.varpu.vector.Ternion;
+import blue.lhf.varpu.vector.*;
 
-import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 import static blue.lhf.varpu.vector.Quaternion.pure;
 import static blue.lhf.varpu.vector.Ternion.ZERO;
@@ -25,7 +22,7 @@ import static java.lang.Math.*;
  * </p>
  */
 @SuppressWarnings("unused")
-public final class Box implements Orthotope<Double, Box> {
+public final class Box implements Orthotope<Ternion, Box> {
     private final Ternion origin;
     private final Ternion a;
     private final Ternion b;
@@ -36,20 +33,6 @@ public final class Box implements Orthotope<Double, Box> {
         this.a = a;
         this.b = b;
         this.c = c;
-        ensureOrthogonal(0.1);
-    }
-
-    /**
-     * Ensures that this box' three origin-connected edges are orthogonal.
-     *
-     * @throws IllegalArgumentException If they are not.
-     */
-    private void ensureOrthogonal(final double e) {
-        final Supplier<IllegalArgumentException> ex = () -> new IllegalArgumentException(
-            "A box' three origin-connected edges must be orthogonal.");
-        if (abs(a.dot(b)) > e) throw ex.get();
-        if (abs(b.dot(c)) > e) throw ex.get();
-        if (abs(a.dot(c)) > e) throw ex.get();
     }
 
     /**
@@ -91,14 +74,6 @@ public final class Box implements Orthotope<Double, Box> {
      */
     public Box offset(final Ternion offset) {
         return new Box(origin.sum(offset), a, b, c);
-    }
-
-    private Ternion centreCache = null;
-    public Ternion centre() {
-        if (centreCache == null) {
-            return centreCache = origin.sum(a.product(0.5)).sum(b.product(0.5)).sum(c.product(0.5));
-        }
-        return centreCache;
     }
 
     /**
@@ -168,52 +143,37 @@ public final class Box implements Orthotope<Double, Box> {
     }
 
     public boolean intersects(final Box box) {
+        final Ternion[] edges = originalEdges();
+        final Ternion[] boxEdges = box.originalEdges();
         final Ternion diff = box.centre().difference(centre());
-        final Ternion na = a.normalised();
-        final Ternion nb = b.normalised();
-        final Ternion nc = c.normalised();
-        final Ternion nba = box.a.normalised();
-        final Ternion nbb = box.b.normalised();
-        final Ternion nbc = box.c.normalised();
 
-        final Ternion[] edges = Arrays.stream(originalEdges())
-            .map(Ternion::normalised).toArray(Ternion[]::new);
-        final Ternion[] bedges = Arrays.stream(box.originalEdges())
-            .map(Ternion::normalised).toArray(Ternion[]::new);
+        for (final Ternion orthonormal : orthonormals())
+            if (hasSeparatingPlane(diff, orthonormal, edges, boxEdges)) return false;
 
-        return !(
-            hasSeparatingPlane(diff, na, edges, bedges) ||
-                hasSeparatingPlane(diff, nb, edges, bedges) ||
-                hasSeparatingPlane(diff, nc, edges, bedges) ||
-                hasSeparatingPlane(diff, nba, edges, bedges) ||
-                hasSeparatingPlane(diff, nbb, edges, bedges) ||
-                hasSeparatingPlane(diff, nbc, edges, bedges) ||
-                hasSeparatingPlane(diff, na.cross(nba), edges, bedges) ||
-                hasSeparatingPlane(diff, na.cross(nbb), edges, bedges) ||
-                hasSeparatingPlane(diff, na.cross(nbc), edges, bedges) ||
-                hasSeparatingPlane(diff, nb.cross(nba), edges, bedges) ||
-                hasSeparatingPlane(diff, nb.cross(nbb), edges, bedges) ||
-                hasSeparatingPlane(diff, nb.cross(nbc), edges, bedges) ||
-                hasSeparatingPlane(diff, nc.cross(nba), edges, bedges) ||
-                hasSeparatingPlane(diff, nc.cross(nbb), edges, bedges) ||
-                hasSeparatingPlane(diff, nc.cross(nbc), edges, bedges)
-        );
+        for (final Ternion orthonormal : box.orthonormals())
+            if (hasSeparatingPlane(diff, orthonormal, edges, boxEdges)) return false;
+
+        for (final Ternion one : orthonormals())
+            for (final Ternion two : box.orthonormals())
+                if (hasSeparatingPlane(diff, one.cross(two), edges, boxEdges)) return false;
+
+        return true;
     }
 
     private boolean hasSeparatingPlane(
         final Ternion centreDiff,
-        final Ternion axis,
-        final Ternion[] aEdges,
-        final Ternion[] bEdges
+        final Ternion plane,
+        final Ternion[] edgesA,
+        final Ternion[] edgesB
     ) {
         return (
-            abs(centreDiff.dot(axis)) > (
-                abs(aEdges[0].dot(axis)) +
-                    abs(aEdges[1].dot(axis)) +
-                    abs(aEdges[2].dot(axis)) +
-                    abs(bEdges[0].dot(axis)) +
-                    abs(bEdges[1].dot(axis)) +
-                    abs(bEdges[2].dot(axis))
+            abs(centreDiff.dot(plane)) > (
+                abs(edgesA[0].product(0.5).dot(plane)) +
+                    abs(edgesA[1].product(0.5).dot(plane)) +
+                    abs(edgesA[2].product(0.5).dot(plane)) +
+                    abs(edgesB[0].product(0.5).dot(plane)) +
+                    abs(edgesB[1].product(0.5).dot(plane)) +
+                    abs(edgesB[2].product(0.5).dot(plane))
             )
         );
     }
@@ -227,6 +187,14 @@ public final class Box implements Orthotope<Double, Box> {
     public Ternion[] originalEdges() {
         return new Ternion[]{a, b, c};
     }
+
+    @Override
+    public Ternion[] halves() {
+        final Ternion[] halves = originalEdges();
+        for (int i = 0; i < halves.length; ++i) halves[i] = halves[i].product(0.5);
+        return halves;
+    }
+
 
     /**
      * @return The volume of this {@link Box}, i.e., the product of its three origin-connected edges.
@@ -276,4 +244,7 @@ public final class Box implements Orthotope<Double, Box> {
             "c=" + c + ']';
     }
 
+    public Box centred(final Ternion ternion) {
+        return new Box(ternion.difference(a.product(0.5).sum(b.product(0.5)).sum(c.product(0.5))), a, b, c);
+    }
 }

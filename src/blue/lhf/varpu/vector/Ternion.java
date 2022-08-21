@@ -49,8 +49,8 @@ public record Ternion(Double x, Double y, Double z) implements RVector<Ternion> 
     }
 
     @Override
-    public Collection<Double> components() {
-        return List.of(x, y, z);
+    public Double[] components() {
+        return new Double[]{x, y, z};
     }
 
     @Override

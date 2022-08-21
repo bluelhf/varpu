@@ -3,7 +3,6 @@ package blue.lhf.varpu.tests;
 import blue.lhf.varpu.polyhedra.Box;
 import blue.lhf.varpu.vector.Ternion;
 import processing.core.PApplet;
-import processing.core.PSketch;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -17,14 +16,14 @@ import static java.lang.Math.toRadians;
 @SuppressWarnings("unused")
 public class VarpuTest {
     public static class Applet extends PApplet {
-        final Box central = Box.box(
-            ternion(-25, -25, -25),
-            ternion(25, 25, 25),
+        Box central = Box.box(
+            ternion(-20, -30, -35),
+            ternion(20, 30, 35),
             euler(toRadians(-20), toRadians(30), toRadians(-45))
         );
         Box other = Box.box(
             ternion(30, 30, 30),
-            ternion(60, 60, 60));
+            ternion(40, 60, 90));
         public static void main(String[] args) {
             Applet.main(Applet.class, "Sketch");
         }
@@ -45,10 +44,7 @@ public class VarpuTest {
             translate(width / 2F, height / 2F, 0);
             push();
 
-            translate(
-                central.centre().x().floatValue(),
-                central.centre().y().floatValue(),
-                central.centre().z().floatValue());
+            central = central.rotate(euler(0.01, 0.02, 0.03));
 
             beginShape(LINES);
             for (final Ternion[] edge : central.edges()) {
@@ -68,26 +64,26 @@ public class VarpuTest {
             pop();
             push();
             float t = System.nanoTime() / 5E8F;
-            final Box trueOther = other.offset(ternion(
-                mouseX - width / 2F, mouseY - height / 2F, sin(t) * 150
-                ));
-            if (central.intersects(trueOther)) {
-                fill(255, 0, 0);
+            other = other.centred(ternion(mouseX - width / 2F, mouseY - height / 2F, 0)).rotate(euler(0.03, 0.02, 0.01));
+
+            if (central.intersects(other)) {
+                stroke(255, 0, 0);
             }
-            if (central.centre().z().intValue() == trueOther.centre().z().intValue()) {
-                System.out.println("same z");
-                trueOther.intersects(central);
+
+            beginShape(LINES);
+            for (final Ternion[] edge : other.edges()) {
+                vertex(
+                    edge[0].x().floatValue(),
+                    edge[0].y().floatValue(),
+                    edge[0].z().floatValue()
+                );
+                vertex(
+                    edge[1].x().floatValue(),
+                    edge[1].y().floatValue(),
+                    edge[1].z().floatValue()
+                );
             }
-            translate(
-                trueOther.centre().x().floatValue(),
-                trueOther.centre().y().floatValue(),
-                trueOther.centre().z().floatValue()
-            );
-            box(
-                trueOther.a().length().floatValue(),
-                trueOther.b().length().floatValue(),
-                trueOther.c().length().floatValue()
-            );
+            endShape();
             pop();
         }
     }

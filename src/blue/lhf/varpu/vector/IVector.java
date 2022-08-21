@@ -11,5 +11,5 @@ public interface IVector<S, Self extends IVector<S, Self>> {
     int dimension();
     Self sum(Self that);
     Self product(S that);
-    Collection<S> components();
+    S[] components();
 }

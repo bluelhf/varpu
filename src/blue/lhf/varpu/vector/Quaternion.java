@@ -71,8 +71,8 @@ public record Quaternion(double r, double x, double y, double z) implements RVec
     }
 
     @Override
-    public Collection<Double> components() {
-        return List.of(r, x, y, z);
+    public Double[] components() {
+        return new Double[]{r, x, y, z};
     }
 
     public Quaternion product(Quaternion that) {
