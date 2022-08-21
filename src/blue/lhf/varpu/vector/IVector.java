@@ -1,7 +1,5 @@
 package blue.lhf.varpu.vector;
 
-import java.util.Collection;
-
 /**
  * An interface for elements of vector spaces of arbitrary dimension.
  * @param <S> The scalar type of the vector space

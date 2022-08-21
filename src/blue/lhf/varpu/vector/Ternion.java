@@ -12,7 +12,7 @@ import java.text.DecimalFormat;
  * </p>
  * */
 public record Ternion(Double x, Double y, Double z) implements RVector<Ternion> {
-    public static final Ternion ORIGO = ternion(0, 0, 0);
+    public static final Ternion ZERO = ternion(0, 0, 0);
 
     public static Ternion ternion(final double x, final double y, final double z) {
         return new Ternion(x, y, z);

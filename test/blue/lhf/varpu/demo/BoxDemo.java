@@ -5,12 +5,12 @@ import blue.lhf.varpu.vector.Ternion;
 import processing.core.PApplet;
 
 import static blue.lhf.varpu.vector.Quaternion.euler;
-import static blue.lhf.varpu.vector.Ternion.ORIGO;
+import static blue.lhf.varpu.vector.Ternion.ZERO;
 import static blue.lhf.varpu.vector.Ternion.ternion;
 
 public class BoxDemo extends PApplet {
-    Box central = Box.boxAt(ORIGO, ternion(100, 30, 45));
-    Box other = Box.box(ORIGO, ternion(69, 27, 30));
+    Box central = Box.boxAt(ZERO, ternion(100, 30, 45));
+    Box other = Box.box(ZERO, ternion(69, 27, 30));
 
     public static void main(String[] args) {
         BoxDemo.main(BoxDemo.class, "Sketch");
@@ -32,7 +32,7 @@ public class BoxDemo extends PApplet {
         translate(width / 2F, height / 2F, 0);
         push();
 
-        central = central.rotate(euler(0.01, 0.02, 0.03));
+        central = central.rotated(euler(0.01, 0.02, 0.03));
 
         beginShape(LINES);
         for (final Ternion[] edge : central.edges()) {
@@ -52,7 +52,7 @@ public class BoxDemo extends PApplet {
         pop();
         push();
         float t = System.nanoTime() / 5E8F;
-        other = other.centred(ternion(mouseX - width / 2F, mouseY - height / 2F, 0)).rotate(euler(0.03, 0.02, 0.01));
+        other = other.centred(ternion(mouseX - width / 2F, mouseY - height / 2F, 0)).rotated(euler(0.03, 0.02, 0.01));
 
         if (central.intersects(other)) {
             stroke(255, 0, 0);

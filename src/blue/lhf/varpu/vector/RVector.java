@@ -21,7 +21,13 @@ public interface RVector<Self extends RVector<Self>> extends IVector<Double, Sel
     }
 
     default Self normalised() {
-        return product(1 / length());
+        return normalisedOr((Self) new OrigoVector<Self>(dimension()));
+    }
+
+    default Self normalisedOr(final Self def) {
+        final double length = length();
+        if (length == 0) return def;
+        return product(1 / length);
     }
 
     record OrigoVector<Self extends RVector<Self>>(int dimension) implements RVector<Self> {

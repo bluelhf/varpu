@@ -5,7 +5,7 @@ import blue.lhf.varpu.vector.*;
 import java.util.Objects;
 
 import static blue.lhf.varpu.vector.Quaternion.pure;
-import static blue.lhf.varpu.vector.Ternion.ORIGO;
+import static blue.lhf.varpu.vector.Ternion.ZERO;
 import static blue.lhf.varpu.vector.Ternion.ternion;
 import static java.lang.Math.*;
 
@@ -49,6 +49,10 @@ public final class Box implements Orthotope<Ternion, Box> {
         return box(centre.sum(wdh.product(-0.5D)), centre.sum(wdh.product(0.5D)), rotation);
     }
 
+    public static Box empty() {
+        return box(Ternion.ZERO, Ternion.ZERO);
+    }
+
     /**
      * @return A box constructed by rotating
      * the axis-aligned box constructed from the specified points around its centre by
@@ -72,7 +76,7 @@ public final class Box implements Orthotope<Ternion, Box> {
             ternion(0, max.y() - min.y(), 0),
             ternion(0, 0, max.z() - min.z()));
 
-        return rotation != null ? aligned.rotate(rotation) : aligned;
+        return rotation != null ? aligned.rotated(rotation) : aligned;
     }
 
     /**
@@ -88,18 +92,14 @@ public final class Box implements Orthotope<Ternion, Box> {
      * @return A box equivalent to this one rotated around the <b>centre</b> of the box by the given quaternion rotation.
      * @see Box#transform(Quaternion)
      */
-    public Box rotate(final Quaternion rotation) {
-        final Box t = transform(rotation);
-        return new Box(
-            centre().sum(rotation.product(pure(origin.sum(centre().product(-1D)))).product(rotation.conjugate()).toTernion()),
-            t.a, t.b, t.c
-        );
+    public Box rotated(final Quaternion rotation) {
+        return transform(rotation).centred(centre());
     }
 
     /**
      * @param rotation The quaternion rotation to apply.
      * @return A box equivalent to this one rotated around the <b>origin</b> of the box by the given quaternion rotation.
-     * @see Box#rotate(Quaternion)
+     * @see Box#rotated(Quaternion)
      */
     public Box transform(final Quaternion rotation) {
         return new Box(
@@ -115,13 +115,13 @@ public final class Box implements Orthotope<Ternion, Box> {
      */
     public Ternion[] vertices() {
         return new Ternion[]{
-            origin.sum(ORIGO).sum(ORIGO).sum(ORIGO),
-            origin.sum(ORIGO).sum(ORIGO).sum(c),
-            origin.sum(ORIGO).sum(b).sum(c),
-            origin.sum(ORIGO).sum(b).sum(ORIGO),
-            origin.sum(a).sum(ORIGO).sum(ORIGO),
-            origin.sum(a).sum(ORIGO).sum(c),
-            origin.sum(a).sum(b).sum(ORIGO),
+            origin.sum(ZERO).sum(ZERO).sum(ZERO),
+            origin.sum(ZERO).sum(ZERO).sum(c),
+            origin.sum(ZERO).sum(b).sum(c),
+            origin.sum(ZERO).sum(b).sum(ZERO),
+            origin.sum(a).sum(ZERO).sum(ZERO),
+            origin.sum(a).sum(ZERO).sum(c),
+            origin.sum(a).sum(b).sum(ZERO),
             origin.sum(a).sum(b).sum(c),
         };
     }
@@ -227,22 +227,6 @@ public final class Box implements Orthotope<Ternion, Box> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (Box) obj;
-        return Objects.equals(this.origin, that.origin) &&
-            Objects.equals(this.a, that.a) &&
-            Objects.equals(this.b, that.b) &&
-            Objects.equals(this.c, that.c);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(origin, a, b, c);
-    }
-
-    @Override
     public String toString() {
         return "Box[" +
             "origin=" + origin + ", " +
@@ -253,5 +237,48 @@ public final class Box implements Orthotope<Ternion, Box> {
 
     public Box centred(final Ternion ternion) {
         return new Box(ternion.difference(a.product(0.5).sum(b.product(0.5)).sum(c.product(0.5))), a, b, c);
+    }
+
+    public boolean similar(final Box that, final double error) {
+        final Ternion[] ours = this.vertices();
+        final Ternion[] theirs = that.vertices();
+        for (int i = 0; i < ours.length; ++i) {
+            final Ternion a = ours[i], b = theirs[i];
+            if (abs(b.x() - a.x()) > error) return false;
+            if (abs(b.y() - a.y()) > error) return false;
+            if (abs(b.z() - a.z()) > error) return false;
+        }
+        return true;
+    }
+
+    public Box sized(final Ternion wdh) {
+        return new Box(
+            origin,
+            a.normalisedOr(ternion(1, 0, 0)).product(wdh.x()),
+            b.normalisedOr(ternion(0, 1, 0)).product(wdh.y()),
+            c.normalisedOr(ternion(0, 0, 1)).product(wdh.z())
+        ).centred(centre());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Box box = (Box) o;
+
+        if (!origin.equals(box.origin)) return false;
+        if (!a.equals(box.a)) return false;
+        if (!b.equals(box.b)) return false;
+        return c.equals(box.c);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = origin.hashCode();
+        result = 31 * result + a.hashCode();
+        result = 31 * result + b.hashCode();
+        result = 31 * result + c.hashCode();
+        return result;
     }
 }
