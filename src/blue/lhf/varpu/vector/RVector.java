@@ -1,6 +1,6 @@
 package blue.lhf.varpu.vector;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.DoubleStream;
 
 import static java.lang.Math.sqrt;
@@ -21,6 +21,10 @@ public interface RVector<Self extends RVector<Self>> extends IVector<Double, Sel
         return product(-1.0);
     }
 
+    default Self normalised() {
+        return product(1 / length());
+    }
+
     record ZeroVector<Self extends RVector<Self>>(int dimension) implements RVector<Self> {
         @Override
         public Self sum(Self that) {
@@ -33,8 +37,10 @@ public interface RVector<Self extends RVector<Self>> extends IVector<Double, Sel
         }
 
         @Override
-        public Collection<Double> components() {
-            return DoubleStream.generate(() -> 0D).limit(this.dimension()).boxed().toList();
+        public Double[] components() {
+            final Double[] arr = new Double[dimension()];
+            Arrays.fill(arr, 0D);
+            return arr;
         }
     }
 
