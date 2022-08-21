@@ -5,7 +5,7 @@ import blue.lhf.varpu.vector.*;
 import java.util.Objects;
 
 import static blue.lhf.varpu.vector.Quaternion.pure;
-import static blue.lhf.varpu.vector.Ternion.ZERO;
+import static blue.lhf.varpu.vector.Ternion.ORIGO;
 import static blue.lhf.varpu.vector.Ternion.ternion;
 import static java.lang.Math.*;
 
@@ -40,6 +40,13 @@ public final class Box implements Orthotope<Ternion, Box> {
      */
     public static Box box(final Ternion one, final Ternion two) {
         return box(one, two, null);
+    }
+
+    public static Box boxAt(final Ternion centre, final Ternion wdh) {
+        return boxAt(centre, wdh, null);
+    }
+    public static Box boxAt(final Ternion centre, final Ternion wdh, final Quaternion rotation) {
+        return box(centre.sum(wdh.product(-0.5D)), centre.sum(wdh.product(0.5D)), rotation);
     }
 
     /**
@@ -108,13 +115,13 @@ public final class Box implements Orthotope<Ternion, Box> {
      */
     public Ternion[] vertices() {
         return new Ternion[]{
-            origin.sum(ZERO).sum(ZERO).sum(ZERO),
-            origin.sum(ZERO).sum(ZERO).sum(c),
-            origin.sum(ZERO).sum(b).sum(c),
-            origin.sum(ZERO).sum(b).sum(ZERO),
-            origin.sum(a).sum(ZERO).sum(ZERO),
-            origin.sum(a).sum(ZERO).sum(c),
-            origin.sum(a).sum(b).sum(ZERO),
+            origin.sum(ORIGO).sum(ORIGO).sum(ORIGO),
+            origin.sum(ORIGO).sum(ORIGO).sum(c),
+            origin.sum(ORIGO).sum(b).sum(c),
+            origin.sum(ORIGO).sum(b).sum(ORIGO),
+            origin.sum(a).sum(ORIGO).sum(ORIGO),
+            origin.sum(a).sum(ORIGO).sum(c),
+            origin.sum(a).sum(b).sum(ORIGO),
             origin.sum(a).sum(b).sum(c),
         };
     }
